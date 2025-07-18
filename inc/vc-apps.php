@@ -1,24 +1,49 @@
 <?php
-function vc_register_cpt_apps() {
-    $labels = [
-        'name' => 'Apps',
-        'singular_name' => 'App',
-        'menu_name' => 'VC Apps',
-        'add_new_item' => 'Ajouter une nouvelle app',
-        'all_items' => 'Toutes les apps',
-    ];
+add_filter('post_type_link', 'vc_apps_category_permalink', 10, 2);
+function vc_apps_category_permalink($post_link, $post) {
+    if ($post->post_type !== 'vc-apps') {
+        return $post_link;
+    }
 
-    $args = [
-        'labels' => $labels,
-        'public' => true,
-        'has_archive' => true,
-        'rewrite' => ['slug' => 'vc-apps', 'with_front' => false],
-        'supports' => ['title', 'editor', 'thumbnail'],
-        'show_in_rest' => true,
-        'menu_icon' => 'dashicons-smartphone',
-        'taxonomies' => ['category'],
-    ];
+    $terms = get_the_terms($post->ID, 'category');
+    if (!empty($terms) && !is_wp_error($terms)) {
+        return str_replace('%category%', $terms[0]->slug, $post_link);
+    }
 
-    register_post_type('vc-apps', $args);
+    return str_replace('%category%', 'non-classe', $post_link); // fallback
 }
-add_action('init', 'vc_register_cpt_apps');
+
+add_action('admin_menu', 'vc_apps_register_admin_page');
+
+function vc_apps_register_admin_page() {
+    // Menu principal Gérer les Apps
+    add_menu_page(
+        'VC Apps',
+        'VC Apps',
+        'manage_options',
+        'vc_apps_admin',
+        'vc_apps_render_admin_page',  // Affiche la liste des Apps personnalisée
+        'dashicons-smartphone',
+        6
+    );
+
+    // Sous-menu : Ajouter une app, page personnalisée aussi
+    add_submenu_page(
+        'vc_apps_admin',
+        'Ajouter une app',
+        'Ajouter une app',
+        'manage_options',
+        'vc_apps_add_app',             // nouveau slug unique
+        'vc_apps_render_add_app_page'  // nouvelle fonction pour afficher le formulaire personnalisé
+    );
+}
+add_action('admin_menu', 'vc_apps_register_admin_page');
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,99 @@
+.container-register-app{
+  display: flex;
+  gap: 40px;
+  margin-top:40px;
+}
+.container-menus{
+  
+  width: 25%;
+  
+}
+.container-menus .container{
+  background-color: white;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-radius: 10px;
+  height: 100vh;
+}
+.container-infos{
+  width: 80%;
+}
+.menu-info a{
+  color: #000;
+  text-decoration: none;
+  padding-left: 10px;
+  font-size: 18px;
+  font-weight: 500;
+}
+.menu-info.active a{
+  font-weight: 600;
+  padding-left: 0;
+}
+
+.menu-info.active {
+  background-color: #f0f0f1;
+  display: block;
+  border-radius: 5px;
+  padding: 10px;
+}
+a:focus{
+  box-shadow: none;
+  outline: none;
+}
+.form-table{
+  margin: 0 !important;
+}
+.form-table tr{
+ background-color: #fff;
+  display: flex;
+  padding: 20px;
+  border-radius: 10px;
+  flex-direction: column;
+}
+.form-table tr.form-step2,
+.form-table tr.form-step3{
+  display: block;
+}
+.form-table tbody{
+  gap: 20px;
+  display: flex;
+  flex-direction: column;
+}
+.form-table td{
+  display: flex;
+}
+.form-table td div.container-label{
+  width: 20%;
+}
+.form-table td div.container-label label{
+  font-weight: 600;
+}
+.form-table td div.container-input{
+  width: 80%;
+}
+#vc_app_title{
+  width: 100%;
+}
+#container-features,
+#container-faqs{
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+}
+textarea.large-text {
+  width: 100%;
+}
+.container-btn-add{
+  margin-top: 20px;
+}
+a.button{
+  border-color: transparent !important;
+}
+.container-vs-free-url{
+  padding: 0 !important;
+}
+.container-vs-free-url td{
+  padding: 0;
+}

@@ -1,6 +1,7 @@
 <?php
 function vc_apps_add_rewrite_rules() {
-    // Rien pour l'instant
+    add_rewrite_tag('%category%', '([^/]+)', 'category_name=');
+    add_permastruct('vc-apps', 'vc-apps/%category%/%vc-apps%', false);
 }
 
 // Surcharger les templates single/archive pour 'vc-apps' depuis le plugin
