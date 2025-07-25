@@ -1,171 +1,4 @@
 <?php
-
-/**
- * Normalise la meta vc_pricing et renvoie [$pricing_type, $pricing_plans].
- *
- * Rétro-compatibilité :
- * - Ancienne structure simple : ['general'=>...], ['monthly'=>...], etc.
- * - Ancienne structure multi avec souscription : ['monthly'=>[...], 'yearly'=>[...]]
- * - Nouvelle structure : ['type'=>'...', 'plans'=>[...]]
- *
- * @param int $post_id
- * @param string $has_subscription_meta meta vc_has_subscription (yes|no) si dispo
- * @param string $has_multiplan_meta    meta vc_has_multiplan   (yes|no) si dispo
- * @return array [$type, $plans]
- */
-//cette function c'est pour afficher la liste des apps
-function vc_apps_render_admin_page() {
-        if (isset($_GET['vc_status'])) {
-        if ($_GET['vc_status'] === 'success') {
-            echo '<div class="notice notice-success"><p>App enregistrée avec succès.</p></div>';
-        } elseif ($_GET['vc_status'] === 'updated') {
-            echo '<div class="notice notice-success"><p>App mise à jour avec succès.</p></div>';
-        } elseif ($_GET['vc_status'] === 'error') {
-            echo '<div class="notice notice-error"><p>Une erreur est survenue lors de l’enregistrement.</p></div>';
-        }elseif ($_GET['vc_status'] === 'deleted') {
-            echo '<div class="notice notice-success"><p>App supprimée avec succès.</p></div>';
-        }
-    }
-
-
-
-    echo '<div class="wrap">';
-    echo '<h1 class="wp-heading-inline">Liste des Apps</h1>';
-
-    echo '<div class="container-btn-add" style="margin-top: 20px; margin-bottom: 20px;">';
-    // Bouton "Ajouter une App"
-    $add_url = admin_url('admin.php?page=vc_apps_add_app');
-    echo ' <a href="' . esc_url($add_url) . '" class="page-title-action">+ Ajouter une App</a>';
-    echo '</div>';
-
-    $query = new WP_Query([
-        'post_type' => 'vc-apps',
-        'posts_per_page' => -1,
-    ]);
-
-    if ($query->have_posts()) {
-        echo '<form method="post" action="' . admin_url('admin-post.php') . '" onsubmit="return confirm(\'Êtes-vous sûr de vouloir supprimer les apps sélectionnées ?\')">';
-        echo '<input type="hidden" name="action" value="vc_apps_bulk_delete">';
-        echo '<input type="submit" class="button button-danger" value="Supprimer la sélection" style="margin-bottom: 10px;">';
-        echo '<table class="widefat fixed striped">';
-        echo '<thead><tr><th style="width:20px;padding: 2px;"><input type="checkbox" id="select-all-apps"></th><th>Logo</th><th>Titre</th><th>Catégorie</th><th>Features</th><th>Faqs</th><th>Date</th><th>Actions</th></tr></thead><tbody>';
-        while ($query->have_posts()) {
-            $query->the_post();
-            $post_id = get_the_ID();
-            $categories = get_the_terms($post_id, 'category');
-            $logo = get_post_meta($post_id, 'vc_app_logo', true);
-            $features = get_post_meta($post_id, 'vc_features', true);
-            $faqs = get_post_meta($post_id, 'vc_faqs', true);
-            $delete_icon_url = plugin_dir_url(__FILE__) . 'assets/images/delete.png';
-            $edit_icon_url = plugin_dir_url(__FILE__) . 'assets/images/edit.png';
-
-            echo '<tr>';
-            echo '<td><input type="checkbox" class="app-checkbox" name="selected_apps[]" value="' . esc_attr($post_id) . '"></td>';
-            echo '<td>' . ($logo ? '<img src="' . esc_url($logo) . '" style="width:50px;height:auto;">' : '—') . '</td>';
-            echo '<td><a href="' . get_edit_post_link($post_id) . '">' . get_the_title() . '</a></td>';
-            echo '<td>' . (!empty($categories) ? esc_html($categories[0]->name) : '—') . '</td>';
-            echo '<td>' . (is_array($features) ? count($features) : 0) . '</td>';
-            echo '<td>' . (is_array($faqs) ? count($faqs) : 0) . '</td>';
-            echo '<td>' . get_the_date() . '</td>';
-            // Bouton modifier
-            $edit_url = admin_url('admin.php?page=vc_apps_add_app&post_id=' . $post_id);
-            $delete_url = wp_nonce_url(admin_url('admin-post.php?action=vc_apps_delete_app&post_id=' . $post_id), 'vc_apps_delete_' . $post_id);
-            echo '<td>
-                <a href="' . esc_url($edit_url) . '" class="button"><img src="' . esc_url($edit_icon_url) . '" alt="Modifier" style="width:16px;height:16px;vertical-align:middle;"></a>
-                <a href="' . esc_url($delete_url) . '" class="button button-danger" onclick="return confirm(\'Êtes-vous sûr de vouloir supprimer cette app ?\')">
-                    <img src="' . esc_url($delete_icon_url) . '" alt="Supprimer" style="width:16px;height:16px;vertical-align:middle;">
-                </a>
-            </td>';
-            echo '';
-
-            echo '</tr>';
-        }
-
-        echo '</tbody></table>';
-        echo '</form>';
-
-    } else {
-        echo '<p>Aucune app trouvée.</p>';
-    }
-
-    wp_reset_postdata();
-    echo '</div>';
-    echo '<script>
-document.getElementById("select-all-apps").addEventListener("click", function () {
-    const checkboxes = document.querySelectorAll(".app-checkbox");
-    checkboxes.forEach(cb => cb.checked = this.checked);
-});
-</script>';
-}
-
-//cette function c'est pour ajouter une app
-if (isset($_GET['error']) && $_GET['error'] == 1) : 
-    echo '<div class="notice notice-error is-dismissible">
-        <p><strong>Erreur :</strong> L’enregistrement de l’app a échoué. Veuillez réessayer.</p>
-    </div>';
- endif; 
-
-if (isset($_GET['success']) && $_GET['success'] == 1) : 
-    echo '<div class="notice notice-success is-dismissible">
-        <p>App enregistrée avec succès.</p>
-    </div>';
-endif; 
-
-function vc_apps_get_pricing_structured( $post_id, $has_subscription_meta = '', $has_multiplan_meta = '' ) {
-	$raw = get_post_meta( $post_id, 'vc_pricing', true );
-
-	$type  = '';
-	$plans = [];
-
-	// ✅ Cas 1 : Nouvelle structure
-	if ( is_array( $raw ) && isset( $raw['type'], $raw['plans'] ) ) {
-		$type  = $raw['type'];
-		$plans = $raw['plans'];
-	}
-	// ✅ Cas 2 : Ancienne structure simple
-	elseif ( is_array( $raw ) && isset( $raw['general'] ) && is_array( $raw['general'] ) ) {
-		$type  = 'simple_nosub';
-		$plans = [ 'general' => $raw['general'] ];
-	}
-	// ✅ Cas 3 : Ancienne structure simple avec souscription
-	elseif ( is_array( $raw ) && isset( $raw['monthly'], $raw['yearly'] ) && !isset( $raw['monthly'][0] ) && !isset( $raw['yearly'][0] ) ) {
-		$type  = 'simple_withsub';
-		$plans = [
-			'monthly' => $raw['monthly'],
-			'yearly'  => $raw['yearly'],
-		];
-	}
-	// ✅ Cas 4 : Ancienne structure multi avec souscription
-	elseif ( is_array( $raw ) && isset( $raw['monthly'][0], $raw['yearly'][0] ) ) {
-		$type  = 'multi_withsub';
-		$plans = [
-			'monthly' => $raw['monthly'],
-			'yearly'  => $raw['yearly'],
-		];
-	}
-	// ✅ Cas 5 : Ancienne structure multi sans souscription
-	elseif ( is_array( $raw ) ) {
-		$type  = 'multi_nosub';
-		$plans = $raw;
-	}
-
-	// 🔄 Harmonisation du type pour affichage (si on utilise encore l’ancienne convention)
-	if ( $type === 'simple' ) {
-		$type = 'simple_nosub';
-	} elseif ( $type === 'multi' ) {
-		$type = 'multi_nosub';
-	} elseif ( $type === 'simple_subscription' ) {
-		$type = 'simple_withsub';
-	} elseif ( $type === 'multi_subscription' ) {
-		$type = 'multi_withsub';
-	}
-
-	return [ $type, $plans ];
-}
-
-
-
-
 function vc_apps_render_add_app_page() {
     $post_id = isset($_GET['post_id']) ? absint($_GET['post_id']) : 0;
 $editing = $post_id > 0;
@@ -197,6 +30,7 @@ if ($editing) {
         $url_request  = get_post_meta($post_id, 'vc_url_feature', true);
         $url_changelog= get_post_meta($post_id, 'vc_url_changelog', true);
         $pricing = get_post_meta($post_id, 'vc_pricing', true);
+        $reviews = get_post_meta($post_id, 'vc_reviews', true);
 
     }
 }
@@ -206,7 +40,7 @@ if ($editing) {
         <h1 class="wp-heading-inline"><?php echo $editing ? 'Modifier l’app' : 'Ajouter une nouvelle App'; ?></h1>
             
         
-        <div style="margin-top: -35px; float: right;">
+        <div style="float: right;">
             <a href="<?php echo admin_url('admin.php?page=vc_apps_admin'); ?>" class="button button-secondary">← Retour à la liste</a>
         </div>
         <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" enctype="multipart/form-data">
@@ -221,6 +55,7 @@ if ($editing) {
                         <div class="menu-info"> <a href="#container-pricing">Pricings</a> </div>
                         <div class="menu-info"> <a href="#container-features">Features</a> </div>
                         <div class="menu-info"> <a href="#container-faqs">Faq</a> </div>
+                        <div class="menu-info"> <a href="#container-reviews">Reviews</a> </div>
                     </div>
                 </div>
                 <div class="container-infos">
@@ -295,15 +130,21 @@ if ($editing) {
                             <tr class="form-step3">
                                 <td>
                                     <div class="container-label">
-                                        <label for="vc_app_short_desc">Description courte:</label>
+                                        <label for="vc_app_short_desc">Description courte :</label>
                                     </div>
                                     <div class="container-input">
-                                        <textarea name="vc_app_short_desc" id="vc_app_short_desc" class="large-text" rows="3"><?php echo esc_textarea($editing ? $short_desc : ''); ?></textarea>
+                                        <?php
+                                            wp_editor($editing ? $short_desc : '', 'vc_app_short_desc', [
+                                                'textarea_name' => 'vc_app_short_desc',
+                                                'media_buttons' => true,
+                                                'textarea_rows' => 4,
+                                            ]);
+                                        ?>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="container-label">
-                                        <label for="vc_app_long_desc">Description longue:</label>
+                                        <label for="vc_app_long_desc">Description longue :</label>
                                     </div>
                                     <div class="container-input">
                                         <?php
@@ -316,6 +157,7 @@ if ($editing) {
                                     </div>
                                 </td>
                             </tr>
+
                         </table>
                     </div>
 
@@ -568,7 +410,7 @@ if ($editing) {
                         
                     </div>
 
-
+                    <!--pour features-->
                     <div id="container-features">
                         <!--pour les features-->
                         <h2>Features</h2>
@@ -580,7 +422,7 @@ if ($editing) {
                             if ($editing && !empty($features)) {
                                 foreach ($features as $i => $feature) {
                                     ?>
-                                    <div class="vc-feature-block" style="margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; position: relative;">
+                                    <div class="vc-feature-block" data-index="<?php echo $i; ?>" style="margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; position: relative;">
                                         <a href="#" class="button-link-delete remove-feature" style="color: red; position: absolute; top: 10px; right: 10px;">Supprimer</a>
 
                                         <input type="button" class="button vc-upload-feature-image" value="Uploader une image">
@@ -594,6 +436,12 @@ if ($editing) {
                                         </p>
 
                                         <p><label>URL du bouton<br><input type="url" name="vc_features[<?php echo $i; ?>][button]" class="regular-text" value="<?php echo esc_attr($feature['button']); ?>"></label></p>
+                                        <label>Style d'affichage<br>
+                                        <select name="vc_features[<?php echo $i; ?>][style]" id="vc_feature_style_<?php echo $i; ?>">
+                                            <option value="left" <?php selected($feature['style'] ?? '', 'left'); ?>>Image Left / Text Right</option>
+                                            <option value="right" <?php selected($feature['style'] ?? '', 'right'); ?>>Image Right / Text Left</option>
+                                            <option value="stacked" <?php selected($feature['style'] ?? '', 'stacked'); ?>>Stacked (Image Top)</option>
+                                        </select>
                                     </div>
                                     <?php
                                 }
@@ -603,7 +451,7 @@ if ($editing) {
                             <p><a href="#" class="button" id="add-feature-button">Ajouter une feature</a></p>
 
                         <template id="vc-feature-template">
-                            <div class="vc-feature-block" style="margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; position: relative;">
+                            <div class="vc-feature-block" data-index="<?php echo $i; ?>" style="margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; position: relative;">
                                 <a href="#" class="button-link-delete remove-feature" style="color: red; position: absolute; top: 10px; right: 10px;">Supprimer</a>
 
                                 <input type="button" class="button vc-upload-feature-image" value="Uploader une image">
@@ -618,6 +466,15 @@ if ($editing) {
                                 </p>
 
                                 <p><label>URL du bouton<br><input type="url" name="vc_features[__index__][button]" class="regular-text"></label></p>
+                                <p>
+                                    <label>Style d'affichage<br>
+                                        <select name="vc_features[__index__][style]" class="vc-feature-style">
+                                            <option value="left">Image Left / Text Right</option>
+                                            <option value="right">Image Right / Text Left</option>
+                                            <option value="stacked">Stacked (Image Top)</option>
+                                        </select>
+                                    </label>
+                                </p>
                             </div>
                         </template>
                     </div>
@@ -677,6 +534,77 @@ if ($editing) {
                             </div>
                         </template>
                     </div>
+
+                    <!--pour les reviews-->
+                    <div id="container-reviews">
+                        <h2>Test Reviews</h2>
+                        <div>
+                            <p>Ajoutez manuellement des avis associés à cette app. (utiles pour pré-remplir des données ou importer).</p>
+                        </div>
+
+                        <div id="vc_reviews_container">
+                            <?php
+                            $reviews = get_post_meta($post_id, 'vc_reviews', true);
+                            if ($editing && !empty($reviews) && is_array($reviews)) {
+                                foreach ($reviews as $i => $review) {
+                                    ?>
+                                    <div class="vc-review-block" style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px;">
+                                        <p>
+                                            <label>Nom de l'auteur</label><br>
+                                            <input type="text" name="vc_reviews[<?php echo $i; ?>][author]" value="<?php echo esc_attr($review['author']); ?>" style="width:100%;" />
+                                        </p>
+                                        <p>
+                                            <label>Note (1 à 5)</label><br>
+                                            <select name="vc_reviews[<?php echo $i; ?>][rating]" style="width:100%;">
+                                                <?php for ($j = 5; $j >= 1; $j--): ?>
+                                                    <option value="<?php echo $j; ?>" <?php selected($review['rating'], $j); ?>><?php echo $j; ?> ★</option>
+                                                <?php endfor; ?>
+                                            </select>
+                                        </p>
+                                        <p>
+                                            <label>Commentaire</label><br>
+                                            <textarea name="vc_reviews[<?php echo $i; ?>][comment]" rows="5" style="width:100%;"><?php echo esc_textarea($review['comment']); ?></textarea>
+                                        </p>
+                                        <p>
+                                            <button class="button remove-review">Supprimer cet avis</button>
+                                        </p>
+                                    </div>
+                                    <?php
+                                }
+                            }
+                            ?>
+                        </div>
+
+                        <button class="button button-secondary" id="add-review-button">+ Ajouter un avis</button>
+
+                        <template id="vc-review-template">
+                            <div class="vc-review-block" style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px;">
+                                <p>
+                                    <label>Nom de l'auteur</label><br>
+                                    <input type="text" name="vc_reviews[__index__][author]" style="width:100%;" />
+                                </p>
+                                <p>
+                                    <label>Note (1 à 5)</label><br>
+                                    <select name="vc_reviews[__index__][rating]" style="width:100%;">
+                                        <option value="">Choisir une note</option>
+                                        <option value="5">5 ★</option>
+                                        <option value="4">4 ★</option>
+                                        <option value="3">3 ★</option>
+                                        <option value="2">2 ★</option>
+                                        <option value="1">1 ★</option>
+                                    </select>
+                                </p>
+                                <p>
+                                    <label>Commentaire</label><br>
+                                    <textarea name="vc_reviews[__index__][comment]" rows="5" style="width:100%;"></textarea>
+                                </p>
+                                <p>
+                                    <button class="button remove-review">Supprimer cet avis</button>
+                                </p>
+                            </div>
+                        </template>
+                    </div>
+
                 </div>
             </div>
 
@@ -688,88 +616,3 @@ if ($editing) {
     </div>
     <?php
 }
-
-add_action('admin_enqueue_scripts', function($hook) {
-    if (strpos($hook, 'vc_apps') !== false) {
-        // Charger la media library WordPress
-        wp_enqueue_media();
-
-        // Charger ton JS admin
-        wp_enqueue_script(
-            'vc-admin-js',
-            plugin_dir_url(__FILE__) . 'assets/js/admin.js',
-            ['jquery'],
-            null,
-            true
-        );
-
-        // Charger ton CSS admin
-        wp_enqueue_style(
-            'vc-admin-css',
-            plugin_dir_url(__FILE__) . 'assets/css/admin.css',
-            [],
-            null
-        );
-    }
-});
-
-
-add_action('wp_ajax_vc_add_custom_category', 'vc_handle_add_custom_category');
-
-function vc_handle_add_custom_category() {
-    // Sécurité basique
-    if (!current_user_can('manage_categories')) {
-        wp_send_json_error(['message' => 'Permission refusée.']);
-    }
-
-    $name = sanitize_text_field($_POST['name'] ?? '');
-
-    if (empty($name)) {
-        wp_send_json_error(['message' => 'Le nom de la catégorie est vide.']);
-    }
-
-    // Vérification insensible à la casse
-    $existing_cats = get_terms([
-        'taxonomy' => 'category',
-        'hide_empty' => false,
-    ]);
-
-    foreach ($existing_cats as $cat) {
-        if (strcasecmp($cat->name, $name) === 0) {
-            wp_send_json_error(['message' => 'Cette catégorie existe déjà.']);
-        }
-    }
-
-    // Insertion
-    $new_cat = wp_insert_term($name, 'category');
-
-    if (is_wp_error($new_cat)) {
-        wp_send_json_error(['message' => 'Erreur lors de l\'ajout : ' . $new_cat->get_error_message()]);
-    }
-
-    wp_send_json_success([
-        'term_id' => $new_cat['term_id'],
-        'name'    => $name,
-    ]);
-}
-
-add_action('admin_post_vc_apps_bulk_delete', 'vc_apps_handle_bulk_delete');
-
-function vc_apps_handle_bulk_delete() {
-    if (!current_user_can('delete_posts')) {
-        wp_die('Accès refusé');
-    }
-
-    if (!empty($_POST['selected_apps']) && is_array($_POST['selected_apps'])) {
-        foreach ($_POST['selected_apps'] as $post_id) {
-            wp_delete_post((int)$post_id, true);
-        }
-    }
-
-    wp_redirect(admin_url('admin.php?page=vc_apps_admin&vc_status=deleted'));
-    exit;
-}
-
-
-
-

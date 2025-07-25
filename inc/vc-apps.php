@@ -1,19 +1,54 @@
 <?php
-add_filter('post_type_link', 'vc_apps_category_permalink', 10, 2);
-function vc_apps_category_permalink($post_link, $post) {
-    if ($post->post_type !== 'vc-apps') {
-        return $post_link;
-    }
+function vc_register_vc_apps_cpt() {
+    $labels = array(
+        'name'                  => 'Apps',
+        'singular_name'         => 'App',
+        'add_new'               => 'Ajouter une App',
+        'add_new_item'          => 'Ajouter une nouvelle App',
+        'edit_item'             => 'Modifier l\'App',
+        'view_item'             => 'Voir l\'App',
+        'all_items'             => 'Toutes les Apps',
+        'search_items'          => 'Rechercher une App',
+        'not_found'             => 'Aucune App trouvée',
+        'not_found_in_trash'    => 'Aucune App trouvée dans la corbeille',
+    );
 
-    $terms = get_the_terms($post->ID, 'category');
-    if (!empty($terms) && !is_wp_error($terms)) {
-        return str_replace('%category%', $terms[0]->slug, $post_link);
-    }
+    $args = array(
+        'labels'             => $labels,
+        'public'             => true, // important pour frontend
+        'has_archive'        => 'apps',
+        'rewrite'            => array(
+            'slug'       => 'apps/%vc_category%',
+            'with_front' => false
+        ),
+        'publicly_queryable' => true,
+        'show_ui'            => false, // ⚠️ masqué dans l’admin WP
+        'show_in_menu'       => false, // ne pas apparaître dans le menu WP
+        'supports'           => array('title', 'editor', 'thumbnail', 'excerpt', 'comments'),
+        'show_in_rest'       => false, // sauf si tu veux l’exposer à l’API
+    );
 
-    return str_replace('%category%', 'non-classe', $post_link); // fallback
+    register_post_type('vc-apps', $args);
 }
+add_action('init', 'vc_register_vc_apps_cpt');
 
-add_action('admin_menu', 'vc_apps_register_admin_page');
+
+//categorie
+function vc_register_app_taxonomy() {
+    register_taxonomy(
+        'vc_category',
+        'vc-apps',
+        array(
+            'label'        => 'Catégories',
+            'hierarchical' => true,
+            'public'       => true,
+            'rewrite'      => array('slug' => 'apps', 'with_front' => false),
+        )
+    );
+}
+add_action('init', 'vc_register_app_taxonomy');
+
+//vc-apps_register_admin_page
 
 function vc_apps_register_admin_page() {
     // Menu principal Gérer les Apps
@@ -38,7 +73,6 @@ function vc_apps_register_admin_page() {
     );
 }
 add_action('admin_menu', 'vc_apps_register_admin_page');
-
 
 
 

@@ -42,8 +42,9 @@ function vc_apps_save_custom_app() {
     update_post_meta($post_id, 'vc_app_banner', esc_url_raw($_POST['vc_app_banner']));
 
     // Descriptions
-    update_post_meta($post_id, 'vc_app_short_desc', sanitize_textarea_field($_POST['vc_app_short_desc']));
+    update_post_meta($post_id, 'vc_app_short_desc', wp_kses_post($_POST['vc_app_short_desc']));
     update_post_meta($post_id, 'vc_app_long_desc', wp_kses_post($_POST['vc_app_long_desc']));
+
 
     // Features
     if (!empty($_POST['vc_features']) && is_array($_POST['vc_features'])) {
@@ -53,6 +54,7 @@ function vc_apps_save_custom_app() {
                 'title'  => sanitize_text_field($f['title']),
                 'desc'   => wp_kses_post($f['desc']),
                 'button' => esc_url_raw($f['button']),
+                'style' => sanitize_text_field($f['style'] ?? ''),
             ];
         }, $_POST['vc_features']);
         update_post_meta($post_id, 'vc_features', $features);
@@ -73,6 +75,22 @@ function vc_apps_save_custom_app() {
     } else {
         delete_post_meta($post_id, 'vc_faqs');
     }
+
+    //Reviews
+    if (!empty($_POST['vc_reviews']) && is_array($_POST['vc_reviews'])) {
+    $reviews = array_map(function ($r) {
+        return [
+            'author'  => sanitize_text_field($r['author']),
+            'rating'  => intval($r['rating']),
+            'comment' => sanitize_textarea_field($r['comment']),
+        ];
+    }, $_POST['vc_reviews']);
+    update_post_meta($post_id, 'vc_reviews', $reviews);
+    } else {
+        delete_post_meta($post_id, 'vc_reviews');
+    }
+
+
 
     // === PRICING ===
     $pricing_data = [];
