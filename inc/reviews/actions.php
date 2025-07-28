@@ -25,6 +25,7 @@ if (!function_exists('vc_get_reviews')) {
 
         if (!empty($paged_reviews)) {
             foreach ($paged_reviews as $review) {
+                $author_name = esc_html($review['author']);
                 $date = isset($review['date']) ? date_i18n('M d, Y', strtotime($review['date'])) : '';
                 $avatar = isset($review['avatar']) && $review['avatar'] !== '' ? esc_attr($review['avatar']) : 'profil.jpg';
                 $avatar_url = plugin_dir_url(__DIR__) . 'assets/images/' . $avatar;
@@ -35,8 +36,8 @@ if (!function_exists('vc_get_reviews')) {
                 echo '<div class="vc-review" >';
 
                 echo '<div style="display: flex;gap: 20px;justify-content: center;align-items: center;">';
-                echo '<div style="width: 50%;display: flex;align-items: center;gap: 10px;""><span class="name-author"><strong>' . esc_html($review['author']) . '</strong></span><span style="font-size:12px; color:#888;">' . esc_html($date) . '</span></div>';
-                echo '<div class="vc-stars" style="color: #f39c12; font-size: 22px; display:flex; justify-content:end; width: 50%;">';
+                echo '<div style="width: 50%;display: flex;align-items: center;gap: 10px;""><span class="name-author"><strong>' . $author_name . '</strong></span><span style="font-size:12px; color:#888;">' . esc_html($date) . '</span></div>';
+                echo '<div class="vc-stars left-star" style="color: #f39c12; font-size: 22px; display:flex; justify-content:end; width: 50%;">';
 
                 $rating = floatval($review['rating']);
                 $full = floor($rating);
@@ -86,12 +87,18 @@ add_action('wp_ajax_vc_add_review', 'vc_add_review');
 add_action('wp_ajax_nopriv_vc_add_review', 'vc_add_review');
 
 function vc_add_review() {
+    // Vérification utilisateur connecté
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Vous devez être connecté pour laisser un avis.');
+    }
+
+    $current_user = wp_get_current_user();
+    $author  = $current_user->display_name;
     $post_id = absint($_POST['post_id']);
-    $author  = sanitize_text_field($_POST['author']);
     $rating  = intval($_POST['rating']);
     $comment = sanitize_textarea_field($_POST['comment']);
 
-    if (!$author || !$rating || !$comment) {
+    if (!$rating || !$comment) {
         wp_send_json_error('Champs requis manquants.');
     }
 
@@ -99,17 +106,17 @@ function vc_add_review() {
     if (!is_array($reviews)) $reviews = [];
 
     $reviews[] = [
-        'avatar'  => sanitize_file_name($_POST['avatar'] ?? 'profil.jpg'),
+        'avatar'  => sanitize_file_name($_POST['avatar'] ?? 'profil.jpg'), // tu peux ici aussi mettre un avatar user si tu veux
         'author'  => $author,
         'rating'  => $rating,
         'comment' => $comment,
-        'date' => current_time('mysql'),
-        
+        'date'    => current_time('mysql'),
     ];
 
     update_post_meta($post_id, 'vc_reviews', $reviews);
     wp_send_json_success('Avis ajouté.');
 }
+
 
 function vc_get_reviews_summary($post_id) {
     $reviews = get_post_meta($post_id, 'vc_reviews', true);

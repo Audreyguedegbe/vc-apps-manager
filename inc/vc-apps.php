@@ -34,19 +34,18 @@ add_action('init', 'vc_register_vc_apps_cpt');
 
 
 //categorie
-function vc_register_app_taxonomy() {
-    register_taxonomy(
-        'vc_category',
-        'vc-apps',
-        array(
-            'label'        => 'Catégories',
-            'hierarchical' => true,
-            'public'       => true,
-            'rewrite'      => array('slug' => 'apps', 'with_front' => false),
-        )
-    );
+function vc_register_vc_category_taxonomy() {
+    register_taxonomy('vc_category', 'vc-apps', [
+    'label' => 'Catégories',
+    'rewrite' => ['slug' => 'apps'],
+    'hierarchical' => true,
+    'show_ui' => true,
+    'show_admin_column' => false,
+    'public' => true,
+]);
+
 }
-add_action('init', 'vc_register_app_taxonomy');
+add_action('init', 'vc_register_vc_category_taxonomy');
 
 //vc-apps_register_admin_page
 

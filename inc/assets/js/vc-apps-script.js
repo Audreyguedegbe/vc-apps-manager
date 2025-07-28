@@ -161,6 +161,19 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
+
+  //reviews
+  document.querySelectorAll('.vc-stars .star').forEach(function (star) {
+    star.addEventListener('click', function () {
+        const value = this.dataset.value;
+        document.getElementById('rating').value = value;
+
+        document.querySelectorAll('.vc-stars .star').forEach(function (s) {
+            s.style.color = (s.dataset.value <= value) ? '#ffc107' : '#ccc';
+        });
+    });
+});
+
 });
 
 window.addEventListener('scroll', function () {
@@ -186,7 +199,10 @@ window.addEventListener('scroll', function () {
   }
 });
 
-
+//pour les reviews
+document.addEventListener('DOMContentLoaded', function () {
+    
+});
 
 
 

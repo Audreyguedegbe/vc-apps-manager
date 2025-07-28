@@ -38,7 +38,7 @@ function vc_apps_render_admin_page() {
         while ($query->have_posts()) {
             $query->the_post();
             $post_id = get_the_ID();
-            $categories = get_the_terms($post_id, 'category');
+            $categories = get_the_terms($post_id, 'vc_category');
             $logo = get_post_meta($post_id, 'vc_app_logo', true);
             $features = get_post_meta($post_id, 'vc_features', true);
             $faqs = get_post_meta($post_id, 'vc_faqs', true);

@@ -34,8 +34,10 @@ function vc_apps_save_custom_app() {
 
     // Catégorie
     if (!empty($_POST['vc_app_category'])) {
-        wp_set_post_terms($post_id, [(int) $_POST['vc_app_category']], 'category');
+        wp_set_object_terms($post_id, [(int) $_POST['vc_app_category']], 'vc_category');
     }
+
+
 
     // Logo & bannière
     update_post_meta($post_id, 'vc_app_logo', esc_url_raw($_POST['vc_app_logo']));
@@ -182,29 +184,6 @@ update_post_meta($post_id, 'vc_has_multiplan', $has_multi);
     $status = $is_edit ? 'updated' : 'success';
     wp_redirect(admin_url("admin.php?page=vc_apps_admin&vc_status={$status}"));
     exit;
-}
-
-add_action('wp_ajax_vc_add_custom_category', 'vc_add_custom_category');
-function vc_add_custom_category() {
-    if (!current_user_can('manage_categories')) {
-        wp_send_json_error(['message' => 'Permission refusée']);
-    }
-
-    $name = sanitize_text_field($_POST['name']);
-    if (term_exists($name, 'category')) {
-        wp_send_json_error(['message' => 'Cette catégorie existe déjà']);
-    }
-
-    $term = wp_insert_term($name, 'category');
-
-    if (is_wp_error($term)) {
-        wp_send_json_error(['message' => $term->get_error_message()]);
-    }
-
-    wp_send_json_success([
-        'term_id' => $term['term_id'],
-        'name' => $name,
-    ]);
 }
 
 add_action('admin_post_vc_apps_delete_app', 'vc_apps_delete_app');

@@ -56,15 +56,23 @@ if (have_posts()):
 
                                     <div class="vc-review-summary">
                                         <div class="vc-review-header">
-                                            <div class="vc-stars" style="color: #f39c12; font-size: 22px;">
+                                            <div class="vc-stars left-star" style="color: #f39c12; font-size: 22px;">
                                                 <?php
                                                 $full = floor($avg);
                                                 $half = ($avg - $full) >= 0.5 ? 1 : 0;
                                                 $empty = 5 - $full - $half;
 
                                                 echo str_repeat('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 12.705 512 486.59" x="0px" y="0px" xml:space="preserve" width="20px" height="20px" fill="#ffd700" style="margin-left: 0px;"><polygon points="256.814,12.705 317.205,198.566 512.631,198.566 354.529,313.435 414.918,499.295 256.814,384.427 98.713,499.295 159.102,313.435 1,198.566 196.426,198.566 "></polygon></svg>', $full);
-                                                if ($half) echo '½'; // Ou ajoute une icône spéciale
-                                                echo '<span style="color:#ccc; font-size: 25px;">' . str_repeat('★', $empty) . '</span>';
+                                                if ($half) echo '<svg style="margin-top: -1px;" xmlns="http://www.w3.org/2000/svg" width="21px" height="21px" viewBox="0 0 24 24">
+                                                                    <defs>
+                                                                        <linearGradient id="halfGrad">
+                                                                            <stop offset="50%" stop-color="#ffd700"/>
+                                                                            <stop offset="50%" stop-color="#ccc"/>
+                                                                        </linearGradient>
+                                                                    </defs>
+                                                                    <path fill="url(#halfGrad)" d="M12 2l2.8 8.6H24l-7.2 5.2L18.8 24 12 18.2 5.2 24l1.9-8.2L0 10.6h9.2z"/>
+                                                                </svg>'; // Ou ajoute une icône spéciale
+                                                echo '<span style="color:#ccc; font-size: 26px;margin-top: -2px;">' . str_repeat('★', $empty) . '</span>';
                                                 ?>
                                             </div>
                                             <div class="vc-review-average" style="font-size: 18px;">
@@ -397,33 +405,55 @@ if (have_posts()):
                 <div class="vc-reviews-section">
                     <h2 class="title-section-reviews">Reviews</h2>
                     <div class="block-review">
+                        <!-- Formulaire ici -->
                         <div id="vc_reviews_form">
-                            <h3 class="title-form-review">Add a review </h3>
-                            <form id="vc_add_review_form">
-                                <p>
-                                    <label>Nom</label><br>
-                                    <input type="text" name="author" required style="width:100%;">
-                                </p>
-                                <p>
-                                    <label>Note</label><br>
-                                    <select name="rating" required style="width:100%;">
-                                        <option value="">Sélectionner</option>
-                                        <option value="5">5 ★</option>
-                                        <option value="4">4 ★</option>
-                                        <option value="3">3 ★</option>
-                                        <option value="2">2 ★</option>
-                                        <option value="1">1 ★</option>
-                                    </select>
-                                </p>
-                                <p>
-                                    <label>Commentaire</label><br>
-                                    <textarea name="comment" rows="4" required style="width:100%;"></textarea>
-                                </p>
-                                <p>
-                                    <button type="submit" class="button">Soumettre</button>
-                                </p>
+                            <div class="message-connexion">
+                                <?php if (is_user_logged_in()) : 
+                                    $current_user = wp_get_current_user();
+                                    $logout_url = wp_logout_url(get_permalink());
+                                    $profile_url = admin_url('profile.php');
+                                ?>
+                                    <p class="logged-in-as" style="margin-bottom: 5px;">
+                                        Logged in as <?php echo esc_html($current_user->display_name); ?>.
+                                        <span class="link-con"><a href="<?php echo esc_url($profile_url); ?>">Edit your profile</a></span>.
+                                        <span class="link-con"><a href="<?php echo esc_url($logout_url); ?>">Log out?</a></span>
+                                    </p>
+                                    <p class="required-field-message">
+                                        Required fields are marked <span class="required">*</span>
+                                    </p>
+                            </div>
+                            <form id="vc_add_review_form" method="post" style="margin-top: 20px;">
+                                <div class="vc-review-field" style="margin-bottom: 15px; display: flex;gap: 15px;align-items: center;">
+                                    <label style="display: block;">Your rating</label>
+                                    <div class="vc-stars left-star" style="font-size: 26px; color: #ccc;">
+                                        <?php for ($i = 1; $i <= 5; $i++) : ?>
+                                            <span class="star" data-value="<?php echo $i; ?>" data-index="<?php echo $i; ?>" style="cursor:pointer;">&#9733;</span>
+                                        <?php endfor; ?>
+                                        <input type="hidden" name="rating" id="rating" required>
+                                    </div>
+                                </div>
+
+                                <div class="vc-review-field" style="margin-bottom: 15px;">
+                                    <textarea name="comment" placeholder="Your review" rows="3" required class="textarea-review"></textarea>
+                                </div>
+
+                                <div class="vc-review-field">
+                                    <button type="submit" class="vc-submit-review" >
+                                        Submit
+                                    </button>
+                                </div>
                             </form>
+
+                            <script>
+                                
+                            </script>
                         </div>
+                        <?php else : ?>
+                            <p class="logged-in-as">
+                                Vous devez <a href="<?php echo esc_url(wp_login_url(get_permalink())); ?>">vous connecter</a> pour ajouter un commentaire.
+                            </p>
+                        <?php endif; ?>
+
     
                         <div id="vc_reviews_display">
                             

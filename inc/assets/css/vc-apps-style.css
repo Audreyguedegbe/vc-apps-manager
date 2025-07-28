@@ -711,6 +711,9 @@ input[type="radio"]:checked {
 }
 #vc_reviews_form{
     width: 45%;
+    color: #4f4f4f;
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
 }
 #vc_reviews_display{
     width: 55%;
@@ -729,6 +732,40 @@ input[type="radio"]:checked {
     margin-bottom: 5px;
     color: #4f4f4f;
     font-family: 'Poppins', sans-serif;
+}
+.link-con a{
+    color: #7d3aa9;
+    font-family: 'Poppins', sans-serif;
+    text-decoration: none;
+}
+.vc-submit-review{
+    background: #8224e3; 
+    color:#fff; 
+    border:none; 
+    padding:15px 25px; 
+    border-radius:30px; 
+    font-weight:600; 
+    cursor:pointer;
+}
+.textarea-review{
+    width:90%; 
+    padding:10px; 
+    border:1px solid #ccc; 
+    border-radius:5px;
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+}
+.left-star{
+    flex-direction: row !important;
+}
+.vc-stars {
+  display: inline-flex;
+  flex-direction: row-reverse; /* Inverse l'ordre des spans */
+  align-items: center;
+}
+.vc-stars .star:hover,
+.vc-stars .star:hover ~ .star:nth-child(-n+5) {
+    color: rgb(255, 193, 7);
 }
 
 
@@ -775,5 +812,14 @@ input[type="radio"]:checked {
     }
     .vc-faq-title{
         font-size: 18px;
+    }
+    .block-review{
+        flex-direction: column;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    #vc_reviews_form,
+    #vc_reviews_display{
+        width: 100%;
     }
 }

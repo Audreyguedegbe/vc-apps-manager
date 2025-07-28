@@ -12,7 +12,7 @@ if ($editing) {
         $long_desc = get_post_meta($post_id, 'vc_app_long_desc', true);
         $logo = get_post_meta($post_id, 'vc_app_logo', true);
         $banner = get_post_meta($post_id, 'vc_app_banner', true);
-        $category = wp_get_post_terms($post_id, 'category', ['fields' => 'ids']);
+        $category = wp_get_post_terms($post_id, 'vc_category', ['fields' => 'ids']);
         $category = !empty($category) ? $category[0] : '';
         $features = get_post_meta($post_id, 'vc_features', true);
         $faqs = get_post_meta($post_id, 'vc_faqs', true);
@@ -78,14 +78,14 @@ if ($editing) {
                                         <select name="vc_app_category" id="vc_app_category" required>
                                             <option value="">Sélectionnez une catégorie</option>
                                             <?php
-                                            $categories = get_categories([
-                                                'taxonomy' => 'category',
-                                                'hide_empty' => false,
-                                            ]);
-                                            foreach ($categories as $cat) {
-                                                $selected = ($editing && $category == $cat->term_id) ? 'selected' : '';
-                                                echo '<option value="' . esc_attr($cat->term_id) . '" ' . $selected . '>' . esc_html($cat->name) . '</option>';
-                                            }
+                                                $categories = get_terms([
+                                                    'taxonomy' => 'vc_category',
+                                                    'hide_empty' => false,
+                                                ]);
+                                                foreach ($categories as $cat) {
+                                                    $selected = ($editing && $category == $cat->term_id) ? 'selected' : '';
+                                                    echo '<option value="' . esc_attr($cat->term_id) . '" ' . $selected . '>' . esc_html($cat->name) . '</option>';
+                                                }
 
                                             ?>
                                         </select>
