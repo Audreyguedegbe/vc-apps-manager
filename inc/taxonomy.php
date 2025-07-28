@@ -13,4 +13,3 @@ function vc_apps_permalink_filter($post_link, $post) {
     return str_replace('%vc_category%', $term_slug, $post_link);
 }
 add_filter('post_type_link', 'vc_apps_permalink_filter', 10, 2);
-

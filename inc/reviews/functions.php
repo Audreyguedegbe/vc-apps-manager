@@ -1,6 +1,4 @@
 <?php
-
-// Charger les actions AJAX liées aux reviews
 require_once plugin_dir_path(__FILE__) . 'actions.php';
 
 // Hook pour charger le JS uniquement sur ta page personnalisée
@@ -24,4 +22,3 @@ function vc_enqueue_reviews_front() {
         'post_id'  => get_the_ID(),
     ]);
 }
-

@@ -198,11 +198,3 @@ window.addEventListener('scroll', function () {
     }
   }
 });
-
-//pour les reviews
-document.addEventListener('DOMContentLoaded', function () {
-    
-});
-
-
-

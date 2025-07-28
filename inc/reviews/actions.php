@@ -1,5 +1,4 @@
 <?php
-
 if (!function_exists('vc_get_reviews')) {
     add_action('wp_ajax_vc_get_reviews', 'vc_get_reviews');
     add_action('wp_ajax_nopriv_vc_get_reviews', 'vc_get_reviews');

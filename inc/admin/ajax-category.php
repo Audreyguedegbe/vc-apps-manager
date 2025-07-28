@@ -1,4 +1,3 @@
-
 <?php
 add_action('wp_ajax_vc_add_custom_category', 'vc_add_custom_category');
 

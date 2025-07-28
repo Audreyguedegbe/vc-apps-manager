@@ -72,11 +72,3 @@ function vc_apps_register_admin_page() {
     );
 }
 add_action('admin_menu', 'vc_apps_register_admin_page');
-
-
-
-
-
-
-
-

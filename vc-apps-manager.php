@@ -5,14 +5,11 @@
  * Version: 1.0
  * Author: Vertim Coders
  */
-
 if (!defined('ABSPATH')) exit;
-
 // Inclure les fichiers essentiels
 // On utilise la taxonomie native 'category' de WordPress, pas de taxonomie personnalisée
 require_once plugin_dir_path(__FILE__) . 'inc/taxonomy.php';
 require_once plugin_dir_path(__FILE__) . 'inc/vc-apps.php';
-//require_once plugin_dir_path(__FILE__) . 'inc/permalink.php';
 require_once plugin_dir_path(__FILE__) . 'inc/save.php';
 
 require_once plugin_dir_path(__FILE__) . 'inc/admin/admin-list.php';
@@ -22,18 +19,9 @@ require_once plugin_dir_path(__FILE__) . 'inc/admin/ajax-category.php';
 require_once plugin_dir_path(__FILE__) . 'inc/admin/bulk-delete.php';
 require_once plugin_dir_path(__FILE__) . 'inc/admin/assets-loader.php';
 require_once plugin_dir_path(__FILE__) . 'inc/reviews/functions.php';
-
-//require_once plugin_dir_path(__FILE__) . 'inc/reviews/functions.php';
-//require_once plugin_dir_path(__FILE__) . 'inc/reviews/actions.php';
-
-// Déclaration du shortcode
-//add_shortcode('vc_app_reviews', 'vc_render_app_reviews');
-
 function vc_apps_plugin_activate() {
-    vc_register_cpt_apps();
-    //vc_register_taxonomy_app_categories();
-    vc_apps_add_rewrite_rules();
-    //vc_apps_register_default_categories();
+    vc_register_vc_apps_cpt();
+    vc_register_vc_category_taxonomy();
     flush_rewrite_rules();
 }
 register_activation_hook(__FILE__, 'vc_apps_plugin_activate');
@@ -103,4 +91,3 @@ function vc_apps_enqueue_assets() {
         );
     }
 }
-

@@ -160,7 +160,6 @@ elseif ($has_sub === 'yes' && $has_multi === 'yes') {
         }
     }
 }
-//echo '<pre>'; var_dump($pricing_data); echo '</pre>'; die();
 
 
 update_post_meta($post_id, 'vc_pricing', $pricing_data);

@@ -1,5 +1,4 @@
 <?php
-// admin/admin-list.php
 function vc_apps_render_admin_page() {
     if (isset($_GET['vc_status'])) {
         $messages = [
